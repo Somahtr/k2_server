@@ -166,6 +166,7 @@ namespace PersonalRobotics.Kinect2Server
             this.bodyConnector.Listen();
             this.audioConnector.Listen();
             this.pointConnector.Listen();
+            this.pointConnector.Close();
         }
 
         protected override void OnStop()
@@ -184,6 +185,7 @@ namespace PersonalRobotics.Kinect2Server
             this.irConnector.Dispose();
             this.bodyConnector.Dispose();
             this.audioConnector.Dispose();
+            this.pointConnector.Dispose();
         }
 
         private void OnFrameArrived(object sender, MultiSourceFrameArrivedEventArgs e)

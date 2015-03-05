@@ -61,6 +61,7 @@ namespace PersonalRobotics.Kinect2Server
         byte[] byteColorArray;
         byte[] byteDepthArray;
         byte[] byteIRArray;
+        byte[] bytePointArray;
         Body[] bodyArray;
         AudioContainer audioContainer;
 
@@ -142,6 +143,7 @@ namespace PersonalRobotics.Kinect2Server
             this.byteColorArray = new byte[(this.kinect.ColorFrameSource.FrameDescription.Height * this.kinect.ColorFrameSource.FrameDescription.Width * BYTES_PER_COLOR_PIXEL) + sizeof(double)];
             this.byteDepthArray = new byte[this.kinect.DepthFrameSource.FrameDescription.Height * this.kinect.DepthFrameSource.FrameDescription.Width * BYTES_PER_DEPTH_PIXEL + sizeof(double)];
             this.byteIRArray = new byte[this.kinect.InfraredFrameSource.FrameDescription.Height * this.kinect.InfraredFrameSource.FrameDescription.Width * BYTES_PER_IR_PIXEL + sizeof(double)];
+            this.bytePointArray = new byte[this.kinect.InfraredFrameSource.FrameDescription.Height * this.kinect.InfraredFrameSource.FrameDescription.Width * BYTES_PER_3D_POINT + sizeof(double)];
             this.bodyArray = new Body[this.kinect.BodyFrameSource.BodyCount];
 
             this.audioContainer = new AudioContainer();
@@ -211,20 +213,12 @@ namespace PersonalRobotics.Kinect2Server
                     this.depthConnector.Broadcast(this.byteDepthArray);
 
                     // Generate point cloud from depth image
-                    this.kinect.CoordinateMapper.MapDepthFrameToCameraSpace(this.depthArray, pointArray);
+                    this.kinect.CoordinateMapper.MapDepthFrameToCameraSpace(this.depthArray, this.pointArray);
 
-                    // Write the point cloud to a buffer
-                    using (MemoryStream stream = new MemoryStream(this.kinect.DepthFrameSource.FrameDescription.Height * this.kinect.DepthFrameSource.FrameDescription.Width * BYTES_PER_3D_POINT))
-                    {
-                        foreach (CameraSpacePoint csp in pointArray)
-                        {
-                            stream.Write(BitConverter.GetBytes(csp.X), 0, sizeof(float));
-                            stream.Write(BitConverter.GetBytes(csp.Y), 0, sizeof(float));
-                            stream.Write(BitConverter.GetBytes(csp.Z), 0, sizeof(float));
-                        }
-                        stream.Write(BitConverter.GetBytes(utcTime), 0, sizeof(double));
-                        this.pointConnector.Broadcast(stream.ToArray());
-                    }
+                    // Copy point cloud bytes into array and broadcast
+                    System.Buffer.BlockCopy(this.pointArray, 0, this.bytePointArray, 0, this.kinect.DepthFrameSource.FrameDescription.Height * this.kinect.DepthFrameSource.FrameDescription.Width * BYTES_PER_3D_POINT);
+                    System.Buffer.BlockCopy(BitConverter.GetBytes(utcTime), 0, this.bytePointArray, this.kinect.DepthFrameSource.FrameDescription.Height * this.kinect.DepthFrameSource.FrameDescription.Width * BYTES_PER_3D_POINT, sizeof(double));
+                    this.pointConnector.Broadcast(this.bytePointArray);
                 }
             }
 

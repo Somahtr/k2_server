@@ -166,7 +166,7 @@ namespace PersonalRobotics.Kinect2Server
             this.bodyConnector.Listen();
             this.audioConnector.Listen();
             this.pointConnector.Listen();
-            this.pointConnector.Close();
+            
         }
 
         protected override void OnStop()
@@ -177,6 +177,7 @@ namespace PersonalRobotics.Kinect2Server
             this.irConnector.Close();
             this.bodyConnector.Close();
             this.audioConnector.Close();
+            this.pointConnector.Close();
 
             this.reader.Dispose(); // TODO: Is this actually necessary?
             this.audioReader.Dispose();

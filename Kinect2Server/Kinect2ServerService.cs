@@ -30,7 +30,6 @@ using System.ServiceProcess;
 using System.Windows.Media;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using System.IO;
 
 namespace PersonalRobotics.Kinect2Server
 {
